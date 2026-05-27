@@ -17,8 +17,8 @@ from rich.tree import Tree
 
 
 HIDE_PATTERNS = ['.DS_Store', '__pycache__', '*.egg-info']
-STUB_NAMES = frozenset(['.git', '.venv'])
-STUB_PATTERNS = ['trash', '.trash', '*tmp']
+STUB_NAMES = frozenset(['.git', '.venv', 'trash', '.trash'])
+STUB_PATTERNS = ['*tmp']
 
 
 def main():
