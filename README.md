@@ -73,10 +73,10 @@ The following directories are shown but not expanded (useful to avoid clutter):
 **Exact matches:**
 - `.git` — Version control
 - `.venv` — Python virtual environment
+- `trash` — Directory named "trash"
+- `.trash` — Directory named ".trash"
 
 **Glob patterns:**
-- `trash` — Exact directory named "trash"
-- `.trash` — Exact directory named ".trash"
 - `*tmp` — Any directory ending with "tmp" (e.g., `tmp/`, `local_tmp/`, `mytmp/`)
 
 ## Dependencies
