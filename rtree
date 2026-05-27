@@ -18,6 +18,7 @@ from rich.tree import Tree
 
 HIDE_PATTERNS = ['.DS_Store', '__pycache__', '*.egg-info']
 STUB_NAMES = frozenset(['.git', '.venv'])
+STUB_PATTERNS = ['trash', '.trash', '*tmp']
 
 
 def main():
@@ -116,7 +117,11 @@ def should_hide(path, extra_globs):
 
 
 def is_stub(path):
-    return not path.is_symlink() and path.name in STUB_NAMES and path.is_dir()
+    if path.is_symlink() or not path.is_dir():
+        return False
+    if path.name in STUB_NAMES:
+        return True
+    return any(path.match(pattern) for pattern in STUB_PATTERNS)
 
 
 def _node_name(path, stub):
