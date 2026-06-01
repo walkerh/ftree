@@ -5,8 +5,13 @@
 
 import argparse
 import grp
+import io
+import os
 import pwd
+import shutil
 import stat
+import subprocess
+import sys
 from os import readlink
 from pathlib import Path
 
@@ -49,6 +54,11 @@ def main():
         "-u", "--user-group", action="store_true", help="Show user and group columns"
     )
     parser.add_argument(
+        "--no-pager",
+        action="store_true",
+        help="Disable paging even when output exceeds terminal height",
+    )
+    parser.add_argument(
         "-h", "--help", action="help", help="Show this help message and exit"
     )
     args = parser.parse_args()
@@ -67,7 +77,50 @@ def main():
     )
     tree = Tree(root_label)
     add_node(tree, root, args.ignore, args.user_group)
+    if sys.stdout.isatty() and not args.no_pager:
+        rendered = _render_tree_ansi(console, tree)
+        if rendered.count("\n") > console.height:
+            pager_cmd, _ = _find_pager()
+            if pager_cmd:
+                _page_output(rendered, pager_cmd)
+            else:
+                sys.stdout.write(rendered)
+            return
     console.print(tree)
+
+
+def _find_pager():
+    pager_env = os.environ.get("PAGER")
+    if pager_env is not None:
+        if not pager_env.strip():
+            return None, False
+        parts = pager_env.split()
+        base = shutil.which(parts[0])
+        if base and os.path.basename(base) == "less":
+            if "-R" not in parts:
+                pager_env += " -R"
+            return pager_env, True
+        return pager_env, False
+    if shutil.which("less"):
+        return "less -R", True
+    if shutil.which("more"):
+        return "more", False
+    return None, False
+
+
+def _render_tree_ansi(console, tree):
+    buf = io.StringIO()
+    buf_console = Console(file=buf, force_terminal=True, width=console.width)
+    buf_console.print(tree)
+    return buf.getvalue()
+
+
+def _page_output(content, pager_cmd):
+    proc = subprocess.Popen(pager_cmd, shell=True, stdin=subprocess.PIPE)
+    try:
+        proc.communicate(content.encode())
+    except BrokenPipeError:
+        pass
 
 
 def add_node(tree, path, extra_globs, show_ug):
