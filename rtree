@@ -16,26 +16,32 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-HIDE_PATTERNS = ['.DS_Store', '__pycache__', '*.egg-info']
-STUB_NAMES = frozenset(['.git', '.venv', 'trash', '.trash'])
-STUB_PATTERNS = ['*tmp']
+HIDE_PATTERNS = [".DS_Store", "__pycache__", "*.egg-info"]
+STUB_NAMES = frozenset([".git", ".venv", "trash", ".trash"])
+STUB_PATTERNS = ["*tmp"]
 
 
 def main():
     parser = argparse.ArgumentParser(
-        prog='rtree',
-        description='Display directory tree with permissions and sizes.',
+        prog="rtree",
+        description="Display directory tree with permissions and sizes.",
         add_help=False,
     )
-    parser.add_argument('path', nargs='?', default='.', help='Root path (default: .)')
+    parser.add_argument("path", nargs="?", default=".", help="Root path (default: .)")
     parser.add_argument(
-        '-I', '--ignore', action='append', default=[], metavar='GLOB',
-        help='Additional glob to hide entirely (repeatable)',
+        "-I",
+        "--ignore",
+        action="append",
+        default=[],
+        metavar="GLOB",
+        help="Additional glob to hide entirely (repeatable)",
     )
-    parser.add_argument('-u', '--user-group', action='store_true',
-                        help='Show user and group columns')
-    parser.add_argument('-h', '--help', action='help',
-                        help='Show this help message and exit')
+    parser.add_argument(
+        "-u", "--user-group", action="store_true", help="Show user and group columns"
+    )
+    parser.add_argument(
+        "-h", "--help", action="help", help="Show this help message and exit"
+    )
     args = parser.parse_args()
 
     root = Path(args.path)
@@ -44,10 +50,12 @@ def main():
     try:
         root_st = root.lstat()
     except OSError as e:
-        console.print(f'[red]Error:[/red] {e}')
+        console.print(f"[red]Error:[/red] {e}")
         raise SystemExit(1)
 
-    root_label = format_label(root, root_st, args.user_group, display_name=str(root) + '/')
+    root_label = format_label(
+        root, root_st, args.user_group, display_name=str(root) + "/"
+    )
     tree = Tree(root_label)
     add_node(tree, root, args.ignore, args.user_group)
     console.print(tree)
@@ -81,8 +89,8 @@ def add_node(tree, path, extra_globs, show_ug):
 
 def format_label(path, st, show_ug, display_name=None, stub=False):
     text = Text()
-    text.append(stat.filemode(st.st_mode), style='dim')
-    text.append('  ')
+    text.append(stat.filemode(st.st_mode), style="dim")
+    text.append("  ")
 
     if show_ug:
         try:
@@ -93,18 +101,18 @@ def format_label(path, st, show_ug, display_name=None, stub=False):
             group = grp.getgrgid(st.st_gid).gr_name
         except KeyError:
             group = str(st.st_gid)
-        text.append(f'{user:<12}', style='green')
-        text.append(f'{group:<12}', style='green')
+        text.append(f"{user:<12}", style="green")
+        text.append(f"{group:<12}", style="green")
 
     text.append(size_text(st))
-    text.append('  ')
+    text.append("  ")
 
     name = display_name or _node_name(path, stub)
     text.append(name, style=_name_style(path, stub))
 
     if path.is_symlink():
         target = readlink(path)
-        text.append(f' -> {target}', style='dim italic')
+        text.append(f" -> {target}", style="dim italic")
 
     return text
 
@@ -128,25 +136,25 @@ def _node_name(path, stub):
     if path.is_symlink():
         return path.name
     if stub or path.is_dir():
-        return path.name + '/'
+        return path.name + "/"
     return path.name
 
 
 def _name_style(path, stub):
     if path.is_symlink():
-        return 'italic'
+        return "italic"
     if stub:
-        return 'bold blue dim'
+        return "bold blue dim"
     if path.is_dir():
-        return 'bold blue'
-    return ''
+        return "bold blue"
+    return ""
 
 
 def size_text(st):
     if stat.S_ISDIR(st.st_mode):
-        return Text('         —', style='cyan')
-    return Text(f'{human_size(st.st_size):>10}', style='cyan')
+        return Text("         —", style="cyan")
+    return Text(f"{human_size(st.st_size):>10}", style="cyan")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
