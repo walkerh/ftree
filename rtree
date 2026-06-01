@@ -23,10 +23,11 @@ HIDE_PATTERNS = [
     "*.pyc",
     "*.pyo",
     ".*_cache",
+    ".cache",
     ".*_checkpoints",
 ]
 STUB_NAMES = [".venv", "trash", ".trash"]
-STUB_PATTERNS = ["*.git","*tmp"]
+STUB_PATTERNS = ["*.git", "*tmp"]
 
 
 def main():

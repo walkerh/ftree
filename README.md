@@ -8,9 +8,9 @@ A lightweight directory tree utility that displays file permissions, sizes, and 
 - **File permissions** (Unix mode) and file sizes in human-readable format
 - **Optional user/group columns** to show file ownership
 - **Symlink support** with target display
-- **Smart directory stubbing** to avoid verbose output (.git, .venv)
+- **Smart directory stubbing** to avoid verbose output (.git, bare repos, .venv)
 - **Customizable ignore patterns** to hide files and directories
-- **Built-in filters** for common clutter (.DS_Store, __pycache__, *.egg-info)
+- **Built-in filters** for common clutter (.DS_Store, __pycache__, caches, checkpoints)
 
 ## Installation
 
@@ -60,24 +60,32 @@ rtree -u -I "*.log" /path/to/project
 
 ## Default ignore patterns
 
-The following patterns are hidden by default:
+The following are hidden entirely from output:
 
-- `.DS_Store` (macOS metadata)
-- `__pycache__` (Python cache)
-- `*.egg-info` (Python packaging)
+| Pattern | What it hides |
+|---|---|
+| `.DS_Store` | macOS metadata files |
+| `__pycache__` | Python bytecode cache directories |
+| `*.egg-info` | Python packaging metadata |
+| `*.pyc`, `*.pyo` | Legacy Python bytecode files |
+| `.*_cache` | Tool caches (`.mypy_cache`, `.ruff_cache`, `.pytest_cache`, …) |
+| `.cache` | Generic hidden cache directory |
+| `.*_checkpoints` | Notebook and model checkpoints (`.ipynb_checkpoints`, …) |
 
 ## Stubbed directories
 
-The following directories are shown but not expanded (useful to avoid clutter):
+Stubbed directories appear in the tree but are not expanded. This confirms they
+exist without cluttering the output.
 
-**Exact matches:**
-- `.git` — Version control
-- `.venv` — Python virtual environment
-- `trash` — Directory named "trash"
-- `.trash` — Directory named ".trash"
+| Entry | Type | What it stubs |
+|---|---|---|
+| `.venv` | exact name | Python virtual environment |
+| `trash`, `.trash` | exact name | Trash directories |
+| `*.git` | glob | Git metadata (`.git`) and bare repos (`project.git`) |
+| `*tmp` | glob | Any directory whose name ends in `tmp` |
 
-**Glob patterns:**
-- `*tmp` — Any directory ending with "tmp" (e.g., `tmp/`, `local_tmp/`, `mytmp/`)
+The `*.git` glob stubs both the `.git` directory inside a working tree and
+bare-clone repositories, which are conventionally named `repo.git`.
 
 ## Dependencies
 
