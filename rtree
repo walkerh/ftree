@@ -30,6 +30,7 @@ HIDE_PATTERNS = [
     ".*_cache",
     ".cache",
     ".*_checkpoints",
+    "*~",
 ]
 STUB_NAMES = [".venv", "trash", ".trash"]
 STUB_PATTERNS = ["*.git", "*tmp"]
