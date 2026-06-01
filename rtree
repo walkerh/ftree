@@ -16,9 +16,17 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-HIDE_PATTERNS = [".DS_Store", "__pycache__", "*.egg-info"]
-STUB_NAMES = frozenset([".git", ".venv", "trash", ".trash"])
-STUB_PATTERNS = ["*tmp"]
+HIDE_PATTERNS = [
+    ".DS_Store",
+    "__pycache__",
+    "*.egg-info",
+    "*.pyc",
+    "*.pyo",
+    ".*_cache",
+    ".*_checkpoints",
+]
+STUB_NAMES = [".venv", "trash", ".trash"]
+STUB_PATTERNS = ["*.git","*tmp"]
 
 
 def main():
