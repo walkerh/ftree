@@ -10,7 +10,8 @@ A lightweight directory tree utility that displays file permissions, sizes, and 
 - **Symlink support** with target display
 - **Smart directory stubbing** to avoid verbose output (.git, bare repos, .venv)
 - **Customizable ignore patterns** to hide files and directories
-- **Built-in filters** for common clutter (.DS_Store, __pycache__, caches, checkpoints)
+- **Built-in filters** for common clutter (.DS_Store, __pycache__, caches, checkpoints, emacs backups)
+- **Automatic paging** when output exceeds terminal height
 
 ## Installation
 
@@ -40,6 +41,7 @@ rtree /path    # Show tree of specific directory
 
 - `-u, --user-group` — Include user and group columns
 - `-I, --ignore GLOB` — Add additional glob pattern to hide (repeatable)
+- `--no-pager` — Disable automatic paging
 - `-h, --help` — Show help message
 
 ### Examples
@@ -71,6 +73,7 @@ The following are hidden entirely from output:
 | `.*_cache` | Tool caches (`.mypy_cache`, `.ruff_cache`, `.pytest_cache`, …) |
 | `.cache` | Generic hidden cache directory |
 | `.*_checkpoints` | Notebook and model checkpoints (`.ipynb_checkpoints`, …) |
+| `*~` | Emacs backup files |
 
 ## Stubbed directories
 
