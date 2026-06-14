@@ -74,6 +74,7 @@ The following are hidden entirely from output:
 | `.cache` | Generic hidden cache directory |
 | `.*_checkpoints` | Notebook and model checkpoints (`.ipynb_checkpoints`, …) |
 | `*~` | Emacs backup files |
+| `.tmp*` | Temporary hidden files and directories |
 
 ## Stubbed directories
 
