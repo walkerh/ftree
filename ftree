@@ -41,6 +41,7 @@ def main():
     parser = argparse.ArgumentParser(
         prog="ftree",
         description="Display directory tree with permissions and sizes.",
+        epilog="When path is omitted and stdin is a pipe, reads paths from stdin (one per line) and renders them as a tree.",
         add_help=False,
     )
     parser.add_argument("path", nargs="?", default=None, help="Root path (default: .)")
