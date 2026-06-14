@@ -39,11 +39,11 @@ STUB_PATTERNS = ["*.git", "*tmp"]
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="rtree",
+        prog="ftree",
         description="Display directory tree with permissions and sizes.",
         add_help=False,
     )
-    parser.add_argument("path", nargs="?", default=".", help="Root path (default: .)")
+    parser.add_argument("path", nargs="?", default=None, help="Root path (default: .)")
     parser.add_argument(
         "-I",
         "--ignore",
@@ -65,7 +65,11 @@ def main():
     )
     args = parser.parse_args()
 
-    root = Path(args.path)
+    if args.path is None and not sys.stdin.isatty():
+        main_stdin(args)
+        return
+
+    root = Path(args.path or ".")
     console = Console()
 
     try:
@@ -79,6 +83,49 @@ def main():
     )
     tree = Tree(root_label)
     add_node(tree, root, args.ignore, args.user_group)
+    if sys.stdout.isatty() and not args.no_pager:
+        rendered = _render_tree_ansi(console, tree)
+        if rendered.count("\n") > console.height:
+            pager_cmd, _ = _find_pager()
+            if pager_cmd:
+                _page_output(rendered, pager_cmd)
+            else:
+                sys.stdout.write(rendered)
+            return
+    console.print(tree)
+
+
+def main_stdin(args):
+    raw = sys.stdin.read().splitlines()
+    paths = sorted(p.strip() for p in raw if p.strip())
+    if not paths:
+        return
+
+    trie = {}
+    for path_str in paths:
+        node = trie
+        for part in Path(path_str).parts:
+            node = node.setdefault(part, {})
+
+    console = Console()
+
+    if len(trie) == 1:
+        root_name = next(iter(trie))
+        root_path = Path(root_name)
+        root_children = trie[root_name]
+        try:
+            root_st = root_path.lstat()
+            root_label = format_label(
+                root_path, root_st, args.user_group, display_name=root_name + "/"
+            )
+        except OSError:
+            root_label = Text(root_name + "/")
+        tree = Tree(root_label)
+        _add_trie_nodes(tree, root_children, root_path, args.user_group)
+    else:
+        tree = Tree(".")
+        _add_trie_nodes(tree, trie, Path("."), args.user_group)
+
     if sys.stdout.isatty() and not args.no_pager:
         rendered = _render_tree_ansi(console, tree)
         if rendered.count("\n") > console.height:
@@ -151,6 +198,23 @@ def add_node(tree, path, extra_globs, show_ug):
             add_node(branch, child, extra_globs, show_ug)
         else:
             tree.add(label)
+
+
+def _add_trie_nodes(node, trie, parent_path, show_ug):
+    for name in sorted(trie.keys(), key=str.lower):
+        child_path = parent_path / name
+        children = trie[name]
+        try:
+            child_st = child_path.lstat()
+            stub = is_stub(child_path)
+            label = format_label(child_path, child_st, show_ug, stub=stub)
+        except OSError:
+            label = Text(name + ("/" if children else ""))
+        if children:
+            branch = node.add(label)
+            _add_trie_nodes(branch, children, child_path, show_ug)
+        else:
+            node.add(label)
 
 
 def format_label(path, st, show_ug, display_name=None, stub=False):

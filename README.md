@@ -1,4 +1,4 @@
-# rtree
+# ftree
 
 A lightweight directory tree utility that displays file permissions, sizes, and ownership in the terminal.
 
@@ -7,6 +7,7 @@ A lightweight directory tree utility that displays file permissions, sizes, and 
 - **Tree view** with recursive directory traversal
 - **File permissions** (Unix mode) and file sizes in human-readable format
 - **Optional user/group columns** to show file ownership
+- **Stdin mode** to build a tree from piped paths (e.g., `find` or `fd` output)
 - **Symlink support** with target display
 - **Smart directory stubbing** to avoid verbose output (.git, bare repos, .venv)
 - **Customizable ignore patterns** to hide files and directories
@@ -18,13 +19,13 @@ A lightweight directory tree utility that displays file permissions, sizes, and 
 This is a uv script. You'll need [uv](https://docs.astral.sh/uv/) installed.
 
 ```bash
-uv run rtree --help
+uv run ftree --help
 ```
 
 Or add the script to your PATH for direct execution:
 
 ```bash
-chmod +x rtree
+chmod +x ftree
 export PATH="$PATH:$(pwd)"
 ```
 
@@ -33,8 +34,20 @@ export PATH="$PATH:$(pwd)"
 ### Basic usage
 
 ```bash
-rtree          # Show tree of current directory
-rtree /path    # Show tree of specific directory
+ftree          # Show tree of current directory
+ftree /path    # Show tree of specific directory
+```
+
+### Stdin mode
+
+When no path argument is given and stdin is a pipe, `ftree` reads paths from
+stdin (one per line) and displays them as a tree. Stat info (permissions, size)
+is shown for paths that exist on disk.
+
+```bash
+find . -name "*.py" | ftree
+fd --type f | ftree
+git ls-files | ftree
 ```
 
 ### Options
@@ -48,16 +61,22 @@ rtree /path    # Show tree of specific directory
 
 ```bash
 # Show current directory with permissions and sizes
-rtree
+ftree
 
 # Show specific directory with user/group info
-rtree -u /tmp
+ftree -u /tmp
 
 # Hide a specific directory
-rtree -I "*.egg-info" -I "build"
+ftree -I "*.egg-info" -I "build"
 
 # Combine options
-rtree -u -I "*.log" /path/to/project
+ftree -u -I "*.log" /path/to/project
+
+# Show only Python files, with user/group columns
+find . -name "*.py" | ftree -u
+
+# Show all Markdown files under the current tree
+find . -name "*.md" | ftree
 ```
 
 ## Default ignore patterns
