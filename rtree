@@ -138,6 +138,8 @@ def add_node(tree, path, extra_globs, show_ug):
             child_st = child.lstat()
         except OSError:
             continue
+        if child.name.rstrip("\r") == "Icon" and child_st.st_size == 0:
+            continue
 
         stub = is_stub(child)
         label = format_label(child, child_st, show_ug, stub=stub)

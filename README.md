@@ -75,6 +75,7 @@ The following are hidden entirely from output:
 | `.*_checkpoints` | Notebook and model checkpoints (`.ipynb_checkpoints`, …) |
 | `*~` | Emacs backup files |
 | `.tmp*` | Temporary hidden files and directories |
+| `Icon` (0 bytes) | macOS custom folder icon resource file (`Icon\r`) |
 
 ## Stubbed directories
 
