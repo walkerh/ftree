@@ -57,6 +57,7 @@ def main():
         "-u", "--user-group", action="store_true", help="Show user and group columns"
     )
     parser.add_argument(
+        "-n",
         "--no-pager",
         action="store_true",
         help="Disable paging even when output exceeds terminal height",

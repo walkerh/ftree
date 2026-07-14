@@ -54,7 +54,7 @@ git ls-files | ftree
 
 - `-u, --user-group` — Include user and group columns
 - `-I, --ignore GLOB` — Add additional glob pattern to hide (repeatable)
-- `--no-pager` — Disable automatic paging
+- `-n, --no-pager` — Disable automatic paging
 - `-h, --help` — Show help message
 
 ### Examples
