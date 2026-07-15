@@ -64,6 +64,12 @@ def main():
         help="Show ISO date and time before object name",
     )
     parser.add_argument(
+        "-w",
+        "--weekday",
+        action="store_true",
+        help="Show weekday abbreviation (use alone or with -d)",
+    )
+    parser.add_argument(
         "-n",
         "--no-pager",
         action="store_true",
@@ -88,10 +94,15 @@ def main():
         raise SystemExit(1)
 
     root_label = format_label(
-        root, root_st, args.user_group, args.date, display_name=str(root) + "/"
+        root,
+        root_st,
+        args.user_group,
+        args.date,
+        args.weekday,
+        display_name=str(root) + "/",
     )
     tree = Tree(root_label)
-    add_node(tree, root, args.ignore, args.user_group, args.date)
+    add_node(tree, root, args.ignore, args.user_group, args.date, args.weekday)
     if sys.stdout.isatty() and not args.no_pager:
         rendered = _render_tree_ansi(console, tree)
         if rendered.count("\n") > console.height:
@@ -129,15 +140,18 @@ def main_stdin(args):
                 root_st,
                 args.user_group,
                 args.date,
+                args.weekday,
                 display_name=root_name + "/",
             )
         except OSError:
             root_label = Text(root_name + "/")
         tree = Tree(root_label)
-        _add_trie_nodes(tree, root_children, root_path, args.user_group, args.date)
+        _add_trie_nodes(
+            tree, root_children, root_path, args.user_group, args.date, args.weekday
+        )
     else:
         tree = Tree(".")
-        _add_trie_nodes(tree, trie, Path("."), args.user_group, args.date)
+        _add_trie_nodes(tree, trie, Path("."), args.user_group, args.date, args.weekday)
 
     if sys.stdout.isatty() and not args.no_pager:
         rendered = _render_tree_ansi(console, tree)
@@ -185,7 +199,7 @@ def _page_output(content, pager_cmd):
         pass
 
 
-def add_node(tree, path, extra_globs, show_ug, show_date=False):
+def add_node(tree, path, extra_globs, show_ug, show_date=False, show_weekday=False):
     try:
         children = sorted(path.iterdir(), key=lambda p: p.name.lower())
     except PermissionError:
@@ -202,35 +216,45 @@ def add_node(tree, path, extra_globs, show_ug, show_date=False):
             continue
 
         stub = is_stub(child)
-        label = format_label(child, child_st, show_ug, show_date, stub=stub)
+        label = format_label(
+            child, child_st, show_ug, show_date, show_weekday, stub=stub
+        )
 
         if child.is_symlink() or stub:
             tree.add(label)
         elif child.is_dir():
             branch = tree.add(label)
-            add_node(branch, child, extra_globs, show_ug, show_date)
+            add_node(branch, child, extra_globs, show_ug, show_date, show_weekday)
         else:
             tree.add(label)
 
 
-def _add_trie_nodes(node, trie, parent_path, show_ug, show_date=False):
+def _add_trie_nodes(
+    node, trie, parent_path, show_ug, show_date=False, show_weekday=False
+):
     for name in sorted(trie.keys(), key=str.lower):
         child_path = parent_path / name
         children = trie[name]
         try:
             child_st = child_path.lstat()
             stub = is_stub(child_path)
-            label = format_label(child_path, child_st, show_ug, show_date, stub=stub)
+            label = format_label(
+                child_path, child_st, show_ug, show_date, show_weekday, stub=stub
+            )
         except OSError:
             label = Text(name + ("/" if children else ""))
         if children:
             branch = node.add(label)
-            _add_trie_nodes(branch, children, child_path, show_ug, show_date)
+            _add_trie_nodes(
+                branch, children, child_path, show_ug, show_date, show_weekday
+            )
         else:
             node.add(label)
 
 
-def format_label(path, st, show_ug, show_date, display_name=None, stub=False):
+def format_label(
+    path, st, show_ug, show_date, show_weekday, display_name=None, stub=False
+):
     text = Text()
     text.append(stat.filemode(st.st_mode), style="dim")
     text.append("  ")
@@ -250,9 +274,14 @@ def format_label(path, st, show_ug, show_date, display_name=None, stub=False):
     text.append(size_text(st))
     text.append("  ")
 
-    if show_date:
-        mtime = datetime.fromtimestamp(st.st_mtime).isoformat()
-        text.append(mtime, style="yellow")
+    if show_date or show_weekday:
+        mtime = datetime.fromtimestamp(st.st_mtime)
+        if show_weekday:
+            weekday = mtime.strftime("%a")
+            text.append(weekday, style="yellow")
+            text.append(" ")
+        if show_date:
+            text.append(mtime.isoformat(), style="yellow")
         text.append("  ")
 
     name = display_name or _node_name(path, stub)
