@@ -105,6 +105,7 @@ exist without cluttering the output.
 |---|---|---|
 | `.venv` | exact name | Python virtual environment |
 | `trash`, `.trash` | exact name | Trash directories |
+| `_to_delete` | exact name | Directories staged for deletion |
 | `*.git` | glob | Git metadata (`.git`) and bare repos (`project.git`) |
 | `*tmp` | glob | Any directory whose name ends in `tmp` |
 

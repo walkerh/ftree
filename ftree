@@ -34,7 +34,7 @@ HIDE_PATTERNS = [
     "*~",
     ".tmp*",
 ]
-STUB_NAMES = [".claude", ".local", ".venv", "trash", ".trash"]
+STUB_NAMES = [".claude", ".local", ".venv", "trash", ".trash", "_to_delete"]
 STUB_PATTERNS = ["*.git", "*tmp"]
 
 
